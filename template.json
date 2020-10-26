@@ -1,0 +1,129 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workflows_GetWeatherDemoDeployTest_name": {
+            "defaultValue": "GetWeatherDemoDeployTest",
+            "type": "String"
+        },
+        "connections_azureblob_externalid": {
+            "defaultValue": "/subscriptions/e8c3a8fe-ce1f-4ae5-8488-a862f658eb35/resourceGroups/logic-app-demo/providers/Microsoft.Web/connections/azureblob",
+            "type": "String"
+        },
+        "connections_keyvault_externalid": {
+            "defaultValue": "/subscriptions/e8c3a8fe-ce1f-4ae5-8488-a862f658eb35/resourceGroups/logic-app-demo/providers/Microsoft.Web/connections/keyvault",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('workflows_GetWeatherDemoDeployTest_name')]",
+            "location": "eastus",
+            "properties": {
+                "state": "Disabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        },
+                        "location": {
+                            "defaultValue": "olsztyn,pl",
+                            "type": "String"
+                        }
+                    },
+                    "triggers": {
+                        "Recurrence": {
+                            "recurrence": {
+                                "frequency": "Hour",
+                                "interval": 1
+                            },
+                            "type": "Recurrence"
+                        }
+                    },
+                    "actions": {
+                        "Create_blob": {
+                            "runAfter": {
+                                "HTTP": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "body": "@body('HTTP')",
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['azureblob']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "path": "/datasets/default/files",
+                                "queries": {
+                                    "folderPath": "/weather",
+                                    "name": "@{guid()}.json",
+                                    "queryParametersSingleEncoded": true
+                                }
+                            },
+                            "runtimeConfiguration": {
+                                "contentTransfer": {
+                                    "transferMode": "Chunked"
+                                }
+                            }
+                        },
+                        "Get_secret": {
+                            "runAfter": {},
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['keyvault']['connectionId']"
+                                    }
+                                },
+                                "method": "get",
+                                "path": "/secrets/@{encodeURIComponent('apikey')}/value"
+                            }
+                        },
+                        "HTTP": {
+                            "runAfter": {
+                                "Get_secret": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Http",
+                            "inputs": {
+                                "method": "GET",
+                                "queries": {
+                                    "APPID": "@body('Get_secret')?['value']",
+                                    "q": "@parameters('location')"
+                                },
+                                "uri": "http://api.openweathermap.org/data/2.5/weather"
+                            }
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "azureblob": {
+                                "connectionId": "[parameters('connections_azureblob_externalid')]",
+                                "connectionName": "azureblob",
+                                "id": "/subscriptions/e8c3a8fe-ce1f-4ae5-8488-a862f658eb35/providers/Microsoft.Web/locations/eastus/managedApis/azureblob"
+                            },
+                            "keyvault": {
+                                "connectionId": "[parameters('connections_keyvault_externalid')]",
+                                "connectionName": "keyvault",
+                                "id": "/subscriptions/e8c3a8fe-ce1f-4ae5-8488-a862f658eb35/providers/Microsoft.Web/locations/eastus/managedApis/keyvault"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
