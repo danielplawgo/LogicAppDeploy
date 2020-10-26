@@ -3,13 +3,16 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "workflows_GetWeatherDemoDeployTest_name": {
-            "value": null
+            "value": "GetWeatherDemoDeployTest"
         },
         "connections_azureblob_externalid": {
-            "value": null
+            "value": "/subscriptions/e8c3a8fe-ce1f-4ae5-8488-a862f658eb35/resourceGroups/logic-app-demo/providers/Microsoft.Web/connections/azureblob"
         },
         "connections_keyvault_externalid": {
-            "value": null
-        }
+            "value": "/subscriptions/e8c3a8fe-ce1f-4ae5-8488-a862f658eb35/resourceGroups/logic-app-demo/providers/Microsoft.Web/connections/keyvault"
+        },
+		"location" : {
+			"value": "Warszawa, pl"
+		}
     }
 }

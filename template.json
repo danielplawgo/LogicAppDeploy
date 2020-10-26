@@ -13,6 +13,10 @@
         "connections_keyvault_externalid": {
             "defaultValue": "/subscriptions/e8c3a8fe-ce1f-4ae5-8488-a862f658eb35/resourceGroups/logic-app-demo/providers/Microsoft.Web/connections/keyvault",
             "type": "String"
+        },
+        "location": {
+            "defaultValue": "olsztyn,pl",
+            "type": "String"
         }
     },
     "variables": {},
@@ -121,7 +125,10 @@
                                 "id": "/subscriptions/e8c3a8fe-ce1f-4ae5-8488-a862f658eb35/providers/Microsoft.Web/locations/eastus/managedApis/keyvault"
                             }
                         }
-                    }
+                    },
+					"location": {
+						"value": "[parameters('location')]"
+					}
                 }
             }
         }
